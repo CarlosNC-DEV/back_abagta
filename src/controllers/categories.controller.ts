@@ -7,8 +7,20 @@ import {
 
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
-    const categories = await db.categories.findMany();
-    successResponse(res, "Categorías obtenidas exitosamente", categories);
+    const categories = await db.categories.findMany({
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+    const categoriesWithUsers = categories.map((category) => ({
+      ...category,
+      users: 20,
+    }));
+    successResponse(
+      res,
+      "Categorías obtenidas exitosamente",
+      categoriesWithUsers
+    );
   } catch (error) {
     errorResponse(res, "Error al obtener categorías");
   }

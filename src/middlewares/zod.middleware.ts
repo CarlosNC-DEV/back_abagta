@@ -13,10 +13,10 @@ export const validateSchema = (schema: AnyZodObject) => {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        return errorResponseZod(res, "Validation error", 400, error.errors);
+        return errorResponseZod(res, "Error de validación", 400, error.errors);
       }
 
-      return errorResponseZod(res, "Validation error", 400, []);
+      return errorResponseZod(res, "Error de validación", 400, []);
     }
   };
 };
