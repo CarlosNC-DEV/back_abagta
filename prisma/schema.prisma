@@ -20,6 +20,49 @@ model categories {
   id        String   @id @default(uuid())
   name      String
   duration  Int
+  clients   clients[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model messages {
+  id          String   @id @default(uuid())
+  description String
+  order       Int      @unique
+  daysToSend  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model clients {
+  id          String     @id @default(uuid())
+  name        String
+  phone       String
+  plate       String     @unique
+  date        String 
+  address     String
+  status      String     @default("A") // A=activo, V=vencido, M=mora, I=inhabilitado
+  categoryId  String
+  category    categories @relation(fields: [categoryId], references: [id])
+  payments    payments[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([phone])
+  @@index([date])
+  @@index([categoryId])
+}
+
+model payments {
+  id        String   @id @default(uuid())
+  dueDate   String 
+  paid      Boolean  @default(false)
+  active    Boolean  @default(true)
+  clientId  String
+  client    clients  @relation(fields: [clientId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([dueDate])
 }

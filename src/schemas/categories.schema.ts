@@ -14,10 +14,10 @@ export const createCategorySchema = z.object({
 export const updateCategorySchema = z.object({
   params: z.object({
     id: z.string({
-        required_error: "El ID es requerido",
+      required_error: "El ID es requerido",
       }).uuid({
         message: "El ID no es un UUID válido",
-      }),
+        }),
   }),
   body: z.object({
     name: z.string().optional(),

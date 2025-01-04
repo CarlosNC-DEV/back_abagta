@@ -11,11 +11,22 @@ export const getAllCategories = async (req: Request, res: Response) => {
       orderBy: {
         createdAt: "asc",
       },
+      include: {
+        _count: {
+          select: { clients: true }
+        }
+      }
     });
+
     const categoriesWithUsers = categories.map((category) => ({
-      ...category,
-      users: 20,
+      id: category.id,
+      name: category.name,
+      duration: category.duration,
+      createdAt: category.createdAt,
+      updatedAt: category.updatedAt,
+      users: category._count.clients
     }));
+
     successResponse(
       res,
       "Categorías obtenidas exitosamente",
