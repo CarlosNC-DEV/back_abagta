@@ -8,6 +8,9 @@ import categoriesRoutes from "./routes/categories.routes";
 import messagesRoutes from "./routes/messages.routes";
 import clientsRoutes from "./routes/clients.routes";
 
+// Cron
+import "./routes/payments.routes";
+
 const app: Express = express();
 
 app.use(cors());

@@ -14,15 +14,15 @@ model users {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-} 
+}
 
 model categories {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
   duration  Int
   clients   clients[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model messages {
@@ -35,18 +35,18 @@ model messages {
 }
 
 model clients {
-  id          String     @id @default(uuid())
-  name        String
-  phone       String
-  plate       String     @unique
-  date        String 
-  address     String
-  status      String     @default("A") // A=activo, V=vencido, M=mora, I=inhabilitado
-  categoryId  String
-  category    categories @relation(fields: [categoryId], references: [id])
-  payments    payments[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id         String     @id @default(uuid())
+  name       String
+  phone      String
+  plate      String     @unique
+  date       String
+  address    String
+  status     String     @default("A") // A=activo, V=vencido, M=mora, I=inhabilitado
+  categoryId String
+  category   categories @relation(fields: [categoryId], references: [id])
+  payments   payments[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 
   @@index([phone])
   @@index([date])
@@ -54,15 +54,27 @@ model clients {
 }
 
 model payments {
-  id        String   @id @default(uuid())
-  dueDate   String 
-  paid      Boolean  @default(false)
-  active    Boolean  @default(true)
-  clientId  String
-  client    clients  @relation(fields: [clientId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(uuid())
+  dueDate      String
+  paid         Boolean  @default(false)
+  active       Boolean  @default(true)
+  sentMessages Int[]
+  clientId     String
+  client       clients  @relation(fields: [clientId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([clientId])
   @@index([dueDate])
+}
+
+model pending_messages {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String
+  plate     String
+  paymentId String
+  message   String
+  processed Boolean  @default(false)
+  createdAt DateTime @default(now())
 }

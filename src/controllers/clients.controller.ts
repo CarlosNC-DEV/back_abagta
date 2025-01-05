@@ -37,16 +37,18 @@ export const getClientsByCategory = async (req: Request, res: Response) => {
 
     // Transformamos la respuesta para que el pago sea un objeto único en lugar de un array
     const clientsWithPayment = clients.map((client) => {
-        const activePayment = client.payments[0] || null;
-        
-        return {
-          ...client,
-          activePayment: activePayment ? {
-            ...activePayment,
-            infoDate: formatDateToNatural(activePayment.dueDate)
-          } : null
-        };
-      });
+      const activePayment = client.payments[0] || null;
+
+      return {
+        ...client,
+        activePayment: activePayment
+          ? {
+              ...activePayment,
+              infoDate: formatDateToNatural(activePayment.dueDate),
+            }
+          : null,
+      };
+    });
 
     successResponse(res, "Clientes obtenidos exitosamente", clientsWithPayment);
   } catch (error) {
@@ -121,7 +123,9 @@ export const updateClient = async (req: Request, res: Response) => {
       include: {
         category: true,
         payments: {
-          where: { active: true },
+          orderBy: {
+            dueDate: "desc",
+          },
         },
       },
     });
@@ -132,31 +136,34 @@ export const updateClient = async (req: Request, res: Response) => {
 
     // Si se está actualizando la fecha y es diferente a la actual
     if (date && date !== clientExists.date) {
-      // Desactivar el pago actual si existe
-      if (clientExists.payments.length > 0) {
-        await db.payments.updateMany({
+      const activePayment = clientExists.payments.find((p) => p.active);
+      if (activePayment) {
+        // Obtener día y mes de la nueva fecha del cliente
+        const [newDay] = date.split("/");
+        // Obtener el año del último pago
+        const [_, currentMonth, currentYear] = activePayment.dueDate.split("/");
+
+        // Generar la nueva fecha de pago manteniendo el año del último pago
+        const newDueDate = `${newDay}/${currentMonth}/${currentYear}`;
+
+        // Desactivar el pago actual
+        await db.payments.update({
           where: {
-            clientId: id,
-            active: true,
+            id: activePayment.id,
           },
           data: { active: false },
         });
-      }
-      // Calcular y crear nuevo pago
-      const startDate = parse(date, "dd/MM/yyyy", new Date());
-      const dueDate = format(
-        addMonths(startDate, clientExists.category.duration),
-        "dd/MM/yyyy"
-      );
 
-      await db.payments.create({
-        data: {
-          dueDate,
-          clientId: id,
-          active: true,
-          paid: false,
-        },
-      });
+        // Crear nuevo pago con la fecha ajustada
+        await db.payments.create({
+          data: {
+            dueDate: newDueDate,
+            clientId: id,
+            active: true,
+            paid: false,
+          },
+        });
+      }
     }
 
     const client = await db.clients.update({
@@ -173,8 +180,10 @@ export const updateClient = async (req: Request, res: Response) => {
         category: true,
       },
     });
+
     successResponse(res, "Cliente actualizado exitosamente", client);
   } catch (error) {
+    console.error(error);
     errorResponse(res, "Error al actualizar cliente");
   }
 };
