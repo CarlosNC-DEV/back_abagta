@@ -3,6 +3,7 @@ import db from "../db";
 import { format, addDays, subDays, parse } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { ENV } from "../config";
+import axios from 'axios'
 
 export const checkPaymentsAndSendMessages = async () => {
   try {
@@ -139,10 +140,8 @@ export const processNextClient = async () => {
   });
 
   if (!pendingMessage) return;
-
-  //Envio de mensaje
-  console.log(`Procesando cliente: ${pendingMessage.name}`);
-  console.log(`Mensaje: ${pendingMessage.message}`);
+ 
+  await axios.post(`https://wa.technologystark.com/apiv2/send-message.php?api_key=9e3cee11bdb2981e67a0c5745a526eb7322b5442&sender=376254&number=57${pendingMessage.phone}&message=${pendingMessage.message}`)
 
   // Marcar como procesado
   await db.pending_messages.update({
