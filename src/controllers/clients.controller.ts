@@ -58,7 +58,7 @@ export const getClientsByCategory = async (req: Request, res: Response) => {
 
 export const createClient = async (req: Request, res: Response) => {
   try {
-    const { name, phone, plate, date, address, categoryId } = req.body;
+    const { name, phone, plate, date, pay, respay, address, categoryId } = req.body;
 
     const plateExists = await db.clients.findUnique({
       where: { plate },
@@ -82,6 +82,8 @@ export const createClient = async (req: Request, res: Response) => {
         phone,
         plate,
         date,
+        pay,
+        respay,
         address,
         categoryId,
       },
@@ -116,7 +118,7 @@ export const createClient = async (req: Request, res: Response) => {
 export const updateClient = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, phone, plate, date, address, status } = req.body;
+    const { name, phone, plate, date, pay, respay, address, status } = req.body;
 
     const clientExists = await db.clients.findUnique({
       where: { id },
@@ -173,6 +175,8 @@ export const updateClient = async (req: Request, res: Response) => {
         phone,
         plate,
         date,
+        pay,
+        respay,
         address,
         status,
       },

@@ -3,7 +3,7 @@ import db from "../db";
 import { format, addDays, subDays, parse } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { ENV } from "../config";
-import axios from 'axios'
+import axios from "axios";
 
 export const checkPaymentsAndSendMessages = async () => {
   try {
@@ -20,6 +20,7 @@ export const checkPaymentsAndSendMessages = async () => {
         name: true,
         phone: true,
         plate: true,
+        respay: true,
         payments: {
           where: {
             active: true,
@@ -81,7 +82,13 @@ export const checkPaymentsAndSendMessages = async () => {
 };
 
 const addToPending = async (
-  client: { id: string; name: string; phone: string; plate: string },
+  client: {
+    id: string;
+    name: string;
+    phone: string;
+    plate: string;
+    respay: string;
+  },
   payment: { id: string },
   number: number
 ) => {
@@ -106,6 +113,11 @@ const addToPending = async (
     .replace(/{nombre}/g, client.name)
     .replace(/{placa}/g, client.plate)
     .replace(/{telefono}/g, ENV.NUMBER_ADMIN || "");
+
+  if (number === 9) {
+    let addFinalMessage = `, Su valor de reconexión del servicio es de ${client.respay}.`
+    finalMessage += addFinalMessage;
+  }
 
   await addPendingMessage(client, payment, finalMessage);
 };
@@ -140,8 +152,10 @@ export const processNextClient = async () => {
   });
 
   if (!pendingMessage) return;
- 
-  await axios.post(`https://wa.technologystark.com/apiv2/send-message.php?api_key=9e3cee11bdb2981e67a0c5745a526eb7322b5442&sender=376254&number=57${pendingMessage.phone}&message=${pendingMessage.message}`)
+  
+  await axios.post(
+    `https://wa.technologystark.com/apiv2/send-message.php?api_key=9e3cee11bdb2981e67a0c5745a526eb7322b5442&sender=376254&number=57${pendingMessage.phone}&message=${pendingMessage.message}`
+  );
 
   // Marcar como procesado
   await db.pending_messages.update({

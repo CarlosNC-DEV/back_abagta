@@ -40,6 +40,8 @@ model clients {
   phone      String
   plate      String     @unique
   date       String
+  pay        String
+  respay     String
   address    String
   status     String     @default("A") // A=activo, V=vencido, M=mora, I=inhabilitado
   categoryId String
