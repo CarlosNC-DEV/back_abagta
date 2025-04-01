@@ -58,7 +58,8 @@ export const getClientsByCategory = async (req: Request, res: Response) => {
 
 export const createClient = async (req: Request, res: Response) => {
   try {
-    const { name, phone, plate, date, pay, respay, address, categoryId } = req.body;
+    const { name, phone, plate, date, pay, respay, address, categoryId } =
+      req.body;
 
     const plateExists = await db.clients.findUnique({
       where: { plate },
@@ -138,16 +139,14 @@ export const updateClient = async (req: Request, res: Response) => {
 
     // Si se está actualizando la fecha y es diferente a la actual
     if (date && date !== clientExists.date) {
-      const activePayment = clientExists.payments.find((p) => p.active);
+      const activePayment = await db.payments.findFirst({
+        where: {
+          clientId: id,
+          active: true,
+        },
+      });
+
       if (activePayment) {
-        // Obtener día y mes de la nueva fecha del cliente
-        const [newDay] = date.split("/");
-        // Obtener el año del último pago
-        const [_, currentMonth, currentYear] = activePayment.dueDate.split("/");
-
-        // Generar la nueva fecha de pago manteniendo el año del último pago
-        const newDueDate = `${newDay}/${currentMonth}/${currentYear}`;
-
         // Desactivar el pago actual
         await db.payments.update({
           where: {
@@ -156,10 +155,17 @@ export const updateClient = async (req: Request, res: Response) => {
           data: { active: false },
         });
 
-        // Crear nuevo pago con la fecha ajustada
+        // Calcular la nueva fecha de vencimiento basada en la nueva fecha ingresada
+        const startDate = parse(date, "dd/MM/yyyy", new Date());
+        const dueDate = format(
+          addMonths(startDate, clientExists.category.duration),
+          "dd/MM/yyyy"
+        );
+
+        // Crear nuevo pago con la fecha correctamente calculada
         await db.payments.create({
           data: {
-            dueDate: newDueDate,
+            dueDate: dueDate,
             clientId: id,
             active: true,
             paid: false,
