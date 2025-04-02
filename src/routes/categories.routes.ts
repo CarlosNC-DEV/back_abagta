@@ -3,6 +3,7 @@ import {
   getAllCategories,
   createCategory,
   updateCategory,
+  updateCategoryStatus
 } from "../controllers/categories.controller";
 import { validateSchema } from "../middlewares/zod.middleware";
 import { verifyToken } from "../middlewares/token.middleware";
@@ -28,6 +29,12 @@ router.put(
   "/categories/:id",
   validateSchema(updateCategorySchema),
   updateCategory
+);
+// Ruta para inhabilitar una categoría
+router.put(
+  "/disable/:id",
+  validateSchema(updateCategorySchema),
+  updateCategoryStatus
 );
 
 export default router;

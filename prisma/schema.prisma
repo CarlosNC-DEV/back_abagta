@@ -20,6 +20,7 @@ model categories {
   id        String    @id @default(uuid())
   name      String
   duration  Int
+  status    String    @default("A") // A=activa, I=inhabilitada
   clients   clients[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

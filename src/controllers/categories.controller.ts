@@ -8,14 +8,17 @@ import {
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
     const categories = await db.categories.findMany({
+      where:{ 
+        status: "A"
+      },
       orderBy: {
         createdAt: "asc",
       },
       include: {
         _count: {
-          select: { clients: true }
-        }
-      }
+          select: { clients: true },
+        },
+      },
     });
 
     const categoriesWithUsers = categories.map((category) => ({
@@ -24,7 +27,7 @@ export const getAllCategories = async (req: Request, res: Response) => {
       duration: category.duration,
       createdAt: category.createdAt,
       updatedAt: category.updatedAt,
-      users: category._count.clients
+      users: category._count.clients,
     }));
 
     successResponse(
@@ -58,5 +61,20 @@ export const updateCategory = async (req: Request, res: Response) => {
     successResponse(res, "Categoría actualizada exitosamente", category);
   } catch (error) {
     errorResponse(res, "Error al actualizar categoría");
+  }
+};
+
+export const updateCategoryStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const category = await db.categories.update({
+      where: { id },
+      data: {
+        status: "I",
+      },
+    });
+    successResponse(res, "Categoría inhabilitada exitosamente", category);
+  } catch (error) {
+    errorResponse(res, "Error al inhabilitar categoría");
   }
 };
